@@ -113,12 +113,12 @@ class FunSetSuite extends FunSuite {
   test("intersection contains elements that belong to each set") {
     new TestSets {
       val s = union(s1, s2)
-      val t = union(t, s3)
+      val t = union(s, s3)
       val t2 = intersect(t, s1)
       val t3 = intersect(s1, s2)
       assert(contains(t2, 1), "Intersect 1")
-      assert(contains(t2, 2), "Intersect 2")
-      assert(contains(t2, 3), "Intersect 3")
+      assert(!contains(t2, 2), "Intersect 2")
+      assert(contains(t, 3), "Intersect 3")
       assert(!contains(t3, 1), "Intersect 1")
       assert(!contains(t3, 2), "Intersect 2")
       assert(!contains(t3, 3), "Intersect 3")
