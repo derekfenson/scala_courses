@@ -8,6 +8,7 @@ object Main {
         print(pascal(col, row) + " ")
       println()
     }
+    println(balance("(if (zero? x) max (/ 1 x))".toList))
   }
 
   /**
@@ -25,7 +26,7 @@ object Main {
         if (acc < 0) false
         else if (chars.isEmpty) acc == 0
         else if (chars.head == '(') loop(acc+1, chars.tail)
-        else if (chars.tail == ')') loop(acc-1, chars.tail)
+        else if (chars.head == ')') loop(acc-1, chars.tail)
         else loop(acc, chars.tail)
       }
       loop(0, chars)
