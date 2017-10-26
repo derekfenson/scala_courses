@@ -21,9 +21,14 @@ object Main {
    * Exercise 2
    */
     def balance(chars: List[Char]): Boolean = {
-      def loop(acc: Int, chars: List[Char]): Unit = {
-
+      def loop(acc: Int, chars: List[Char]): Boolean = {
+        if (acc < 0) false
+        else if (chars.isEmpty) acc == 0
+        else if (chars.head == '(') loop(acc+1, chars.tail)
+        else if (chars.tail == ')') loop(acc-1, chars.tail)
+        else loop(acc, chars.tail)
       }
+      loop(0, chars)
     }
   
   /**
