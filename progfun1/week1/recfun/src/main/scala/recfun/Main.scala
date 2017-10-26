@@ -20,7 +20,11 @@ object Main {
   /**
    * Exercise 2
    */
-    def balance(chars: List[Char]): Boolean = ???
+    def balance(chars: List[Char]): Boolean = {
+      def loop(acc: Int, chars: List[Char]): Unit = {
+
+      }
+    }
   
   /**
    * Exercise 3
