@@ -81,6 +81,7 @@ project/plugins/project/
 .lib/
 
 ### Scala ###
+*.sc
 *.class
 *.log
 
