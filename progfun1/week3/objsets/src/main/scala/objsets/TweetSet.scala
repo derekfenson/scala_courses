@@ -157,7 +157,6 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     else left.union(right).mostRetweeted(acc)
   }
 
-
   def descendingByRetweet: TweetList = {
     val most: Tweet=mostRetweeted
     new Cons(most, this.remove(most).descendingByRetweet)
