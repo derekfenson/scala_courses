@@ -275,10 +275,9 @@ object Huffman {
    * and then uses it to perform the actual encoding.
    */
     def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = {
-      lazy val table: CodeTable = convert(tree)
-      lazy val func = codeBits(table)
+      val table: CodeTable = convert(tree)
       def loop(text: List[Char], acc: List[Bit]): List[Bit] = {
-        if (text.isEmpty) acc else loop(text.tail, func(text.head) ::: acc)
+        if (text.isEmpty) acc else loop(text.tail, codeBits(table)(text.head) ::: acc)
       }
       loop(text, List())
     }
