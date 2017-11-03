@@ -282,12 +282,3 @@ object Huffman {
       loop(text, List())
     }
   }
-
-object main extends App {
-  import Huffman._
-  val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
-  println(t1)
-  println(codeBits(convert(t1))('a'))
-  println(quickEncode(t1)(List('a','b')))
-  println(decode(t1, List(0,1)))
-}
