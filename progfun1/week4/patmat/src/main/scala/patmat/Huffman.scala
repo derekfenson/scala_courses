@@ -240,9 +240,9 @@ object Huffman {
     */
   def codeBits(table: CodeTable)(char: Char): List[Bit] = table match {
     case List() => List()
-    case y :: _ =>
+    case y :: ys =>
       if (y._1 == char) y._2
-      else codeBits(table)(char)
+      else codeBits(ys)(char)
   }
 
   
@@ -277,7 +277,7 @@ object Huffman {
     def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = {
       val table: CodeTable = convert(tree)
       def loop(text: List[Char], acc: List[Bit]): List[Bit] = {
-        if (text.isEmpty) acc else loop(text.tail, codeBits(table)(text.head) ::: acc)
+        if (text.isEmpty) acc else loop(text.tail, acc ::: codeBits(table)(text.head))
       }
       loop(text, List())
     }
@@ -287,6 +287,7 @@ object main extends App {
   import Huffman._
   val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
   println(t1)
-  println(encode(t1)(List('a','b')))
+  println(codeBits(convert(t1))('a'))
+  println(quickEncode(t1)(List('a','b')))
   println(decode(t1, List(0,1)))
 }
