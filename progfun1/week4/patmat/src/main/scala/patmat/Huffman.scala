@@ -179,7 +179,8 @@ object Huffman {
     def loop(t: CodeTree, b: List[Bit], acc: List[Char]): List[Char] = t match {
       case Leaf(c, w) => if (b.isEmpty) acc ::: List(c) else loop(tree, b, acc ::: List(c))
       case Fork(l, r, c, w) =>
-        if (b.head == 0) loop(l, b.tail, acc)
+        if (b.isEmpty) c ::: acc
+        else if (b.head == 0) loop(l, b.tail, acc)
         else loop(r, b.tail, acc)
     }
 
@@ -282,3 +283,12 @@ object Huffman {
       loop(text, List())
     }
   }
+
+object main extends App {
+  import Huffman._
+  val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
+  println(t1)
+  println(encode(t1)(List('a','b')))
+  println(decode(t1, List(0,1)))
+  println(decodedSecret)
+}
