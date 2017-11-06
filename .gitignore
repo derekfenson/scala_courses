@@ -85,4 +85,8 @@ project/plugins/project/
 *.class
 *.log
 
+### Misc ###
+*.DS_Store
+
+
 # End of https://www.gitignore.io/api/sbt,scala,intellij
