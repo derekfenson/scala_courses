@@ -79,15 +79,14 @@ object Huffman {
 
   def times(chars: List[Char]): List[(Char, Int)] = chars match {
     case List() => List()
-    case y :: ys => times(y, ys, 1) :: times(ys.filter(c => c != y))
+    case y :: ys => (y, timesAcc(y, chars, 0)) :: times(ys.filter(c => c != y))
   }
 
-  /**
-    * Helper function for times
-    */
-  private def times(char: Char, chars: List[Char], acc: Int): (Char, Int) = chars match {
-    case List() => (char, acc)
-    case y :: ys => if (char == y) times(char, ys, acc + 1) else times(char, ys, acc)
+  private def timesAcc(char: Char, chars: List[Char], acc: Int): Int = chars match {
+    case Nil => acc
+    case y :: ys =>
+      if (char == y) timesAcc(char, ys, acc+1)
+      else timesAcc(char, ys, acc)
   }
 
 
@@ -100,13 +99,21 @@ object Huffman {
     */
   def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = freqs match {
     case List() => List()
-    case y :: ys => insert(Leaf(y._1, y._2), makeOrderedLeafList(ys))
+    case y :: ys => insert(Leaf(y._1, y._2), makeOrderedLeafList(ys))(lt)
   }
 
-  private def insert(l: Leaf, ls: List[Leaf]): List[Leaf] = ls match {
-    case List() => List(l)
-    case y :: ys => if (weight(l) < weight(y)) l :: ls else y :: insert(l, ys)
+  /**
+    * Return the items with item inserted in order according to lt.
+    */
+  private def insert[T](item: T, items: List[T])(lt: (T,T) => Boolean): List[T] = items match {
+    case List() => List(item)
+    case y :: ys => if (lt(item, y)) item :: items else y :: insert(item, ys)(lt)
   }
+
+  /**
+    * Less than function for CodeTrees according to weights
+    */
+  def lt(l: CodeTree, r: CodeTree): Boolean = weight(l) < weight(r)
 
   /**
     * Checks whether the list `trees` contains only one single code tree.
@@ -127,12 +134,7 @@ object Huffman {
     */
   def combine(trees: List[CodeTree]): List[CodeTree] = {
     if (singleton(trees) || trees.isEmpty) trees
-    else insert(makeCodeTree(trees.head, trees.tail.head), trees.tail.tail)
-  }
-
-  private def insert(l: CodeTree, ls: List[CodeTree]): List[CodeTree] = ls match {
-    case List() => List(l)
-    case y :: ys => if (weight(l) < weight(y)) l :: ls else y :: insert(l, ys)
+    else insert(makeCodeTree(trees.head, trees.tail.head), trees.tail.tail)(lt)
   }
 
   /**
@@ -177,13 +179,11 @@ object Huffman {
     */
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
     def loop(t: CodeTree, b: List[Bit], acc: List[Char]): List[Char] = t match {
-      case Leaf(c, w) => if (b.isEmpty) acc ::: List(c) else loop(tree, b, acc ::: List(c))
-      case Fork(l, r, c, w) =>
-        if (b.isEmpty) c ::: acc
-        else if (b.head == 0) loop(l, b.tail, acc)
+      case Leaf(c, w) => if (b.isEmpty) acc ++ List(c) else loop(tree, b, acc ++ List(c))
+      case Fork(l, r, _, _) =>
+        if (b.head == 0) loop(l, b.tail, acc)
         else loop(r, b.tail, acc)
     }
-
     loop(tree, bits, List())
   }
 
@@ -215,21 +215,16 @@ object Huffman {
     */
   def encode(tree: CodeTree)(text: List[Char]): List[Bit] = tree match {
     case Leaf(c, _) => List()
-    case Fork(_, _, _, _) => if (text.isEmpty) List() else encode(tree, text.head) ::: encode(tree)(text.tail)
+    case Fork(_, _, _, _) => if (text.isEmpty) List() else encode(tree, text.head) ++ encode(tree)(text.tail)
   }
 
   def encode(tree: CodeTree, char: Char): List[Bit] = tree match {
     case Leaf(_, _) => List()
     case Fork(l, r, c, _) =>
-      if (chars(l).contains(char)) encode(l, char) ::: List(0)
-      else if (chars(r).contains(char)) encode(r, char) ::: List(1)
-      else List()
+      if (chars(l).contains(char)) 0 :: encode(l, char)
+      else 1 :: encode(r, char)
   }
 
-  def contains(tree: CodeTree)(char: Char): Boolean = tree match {
-    case Leaf(c, _) => c == char
-    case Fork(_, _, c, _) => c.contains(char)
-  }
 
   // Part 4b: Encoding using code table
 
@@ -288,6 +283,7 @@ object main extends App {
   import Huffman._
   val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
   println(t1)
+  println(times(List('a','a','b','b', 'c', 'a')))
   println(encode(t1)(List('a','b')))
   println(decode(t1, List(0,1)))
   println(decodedSecret)
