@@ -2,8 +2,6 @@ package myList
 
 import math.Ordering
 
-
-
 object myList {
 
   def init[T](xs: List[T]): List[T] = xs match {
