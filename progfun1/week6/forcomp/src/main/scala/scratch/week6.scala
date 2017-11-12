@@ -1,5 +1,7 @@
 package scratch
 
+import io.Source
+
 object week6 {
 
   def combos(M: Int, N: Int): IndexedSeq[(Int, Int)] =
@@ -80,7 +82,44 @@ object polynomials {
 
 }
 
+object x {
+
+  val in = Source.fromFile("/Users/derek/coursera/scala/progfun1/week6/forcomp/src/main/resources/forcomp/linuxwords.txt")
+
+  val words = in.getLines.toList filter (word => word forall (chr => chr.isLetter))
+
+  val mnem = Map('2' -> "ABC", '3' -> "DEF", '4' -> "GHI",
+                '5' -> "JKL", '6' -> "MNO", '7' -> "PQRS", '8' -> "TUV", '9' -> "WXYZ")
+
+
+  val charCode: Map[Char, Char] =
+    for ((digit, str) <- mnem; ltr <- str) yield ltr -> digit
+
+
+  def wordCode(word: String): String =
+    word.toUpperCase map charCode
+
+  val wordsForNum: Map[String, Seq[String]] =
+    words groupBy wordCode withDefaultValue Seq()
+
+  def encode(number: String): Set[List[String]] =
+    if (number.isEmpty) Set(List())
+    else {
+      for {
+        split <- 1 to number.length
+        word <- wordsForNum(number take split)
+        rest <- encode(number drop split)
+      } yield word :: rest
+    }.toSet
+}
+
 object main extends App {
   import nqueens._
+  import x._
   queens(4) map show
+  println(words)
+  println(charCode)
+  println(wordCode("Java"))
+  println(encode("43226"))
+
 }
