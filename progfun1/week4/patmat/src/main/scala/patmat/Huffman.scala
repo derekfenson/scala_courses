@@ -77,17 +77,8 @@ object Huffman {
     * }
     */
 
-  def times(chars: List[Char]): List[(Char, Int)] = chars match {
-    case List() => List()
-    case y :: ys => (y, timesAcc(y, chars, 0)) :: times(ys.filter(c => c != y))
-  }
-
-  private def timesAcc(char: Char, chars: List[Char], acc: Int): Int = chars match {
-    case Nil => acc
-    case y :: ys =>
-      if (char == y) timesAcc(char, ys, acc+1)
-      else timesAcc(char, ys, acc)
-  }
+  def times(chars: List[Char]): List[(Char, Int)] =
+    ((chars groupBy identity) mapValues (_.length)).toList
 
 
   /**
@@ -97,23 +88,9 @@ object Huffman {
     * head of the list should have the smallest weight), where the weight
     * of a leaf is the frequency of the character.
     */
-  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = freqs match {
-    case List() => List()
-    case y :: ys => insert(Leaf(y._1, y._2), makeOrderedLeafList(ys))(lt)
-  }
+  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] =
+    freqs map (p => Leaf(p._1, p._2)) sortWith (weight(_) < weight(_))
 
-  /**
-    * Return the items with item inserted in order according to lt.
-    */
-  private def insert[T](item: T, items: List[T])(lt: (T,T) => Boolean): List[T] = items match {
-    case List() => List(item)
-    case y :: ys => if (lt(item, y)) item :: items else y :: insert(item, ys)(lt)
-  }
-
-  /**
-    * Less than function for CodeTrees according to weights
-    */
-  def lt(l: CodeTree, r: CodeTree): Boolean = weight(l) < weight(r)
 
   /**
     * Checks whether the list `trees` contains only one single code tree.
@@ -134,7 +111,7 @@ object Huffman {
     */
   def combine(trees: List[CodeTree]): List[CodeTree] = {
     if (singleton(trees) || trees.isEmpty) trees
-    else insert(makeCodeTree(trees.head, trees.tail.head), trees.tail.tail)(lt)
+    else (makeCodeTree(trees.head, trees.tail.head) :: trees.tail.tail).sortWith(weight(_) < weight(_))
   }
 
   /**
@@ -214,7 +191,7 @@ object Huffman {
     * into a sequence of bits.
     */
   def encode(tree: CodeTree)(text: List[Char]): List[Bit] = tree match {
-    case Leaf(c, _) => List()
+    case Leaf(_, _) => List()
     case Fork(_, _, _, _) => if (text.isEmpty) List() else encode(tree, text.head) ++ encode(tree)(text.tail)
   }
 
