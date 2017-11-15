@@ -27,13 +27,13 @@ object Huffman {
 
   // Part 1: Basics
   def weight(tree: CodeTree): Int = tree match {
-    case Leaf(c, w) => w
-    case Fork(l, r, ch, w) => w
+    case Leaf(_, w) => w
+    case Fork(_, _, _, w) => w
   }
 
   def chars(tree: CodeTree): List[Char] = tree match {
-    case Leaf(c, w) => List(c)
-    case Fork(l, r, c, w) => c
+    case Leaf(c, _) => List(c)
+    case Fork(_, _, c, _) => c
   }
 
   def makeCodeTree(left: CodeTree, right: CodeTree) =
@@ -156,7 +156,7 @@ object Huffman {
     */
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
     def loop(t: CodeTree, b: List[Bit], acc: List[Char]): List[Char] = t match {
-      case Leaf(c, w) => if (b.isEmpty) acc ++ List(c) else loop(tree, b, acc ++ List(c))
+      case Leaf(c, _) => if (b.isEmpty) acc ++ List(c) else loop(tree, b, acc ++ List(c))
       case Fork(l, r, _, _) =>
         if (b.head == 0) loop(l, b.tail, acc)
         else loop(r, b.tail, acc)
@@ -190,18 +190,17 @@ object Huffman {
     * This function encodes `text` using the code tree `tree`
     * into a sequence of bits.
     */
-  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = tree match {
-    case Leaf(_, _) => List()
-    case Fork(_, _, _, _) => if (text.isEmpty) List() else encode(tree, text.head) ++ encode(tree)(text.tail)
+  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = text match {
+    case List() => List()
+    case y :: ys =>
+      def loop(t: CodeTree, acc: List[Bit]): List[Bit] = t match {
+        case Leaf(_, _) => if (ys.isEmpty) acc else acc ++ encode(tree)(ys)
+        case Fork(l, r, _, _) =>
+          if (chars(l).contains(y)) 0 :: loop(l, acc)
+          else 1 :: loop(r, acc)
+      }
+      loop(tree, List())
   }
-
-  def encode(tree: CodeTree, char: Char): List[Bit] = tree match {
-    case Leaf(_, _) => List()
-    case Fork(l, r, c, _) =>
-      if (chars(l).contains(char)) 0 :: encode(l, char)
-      else 1 :: encode(r, char)
-  }
-
 
   // Part 4b: Encoding using code table
 
@@ -249,8 +248,9 @@ object Huffman {
    */
     def quickEncode(tree: CodeTree)(text: List[Char]): List[Bit] = {
       val table: CodeTable = convert(tree)
-      def loop(text: List[Char], acc: List[Bit]): List[Bit] = {
-        if (text.isEmpty) acc else loop(text.tail, acc ::: codeBits(table)(text.head))
+      def loop(text: List[Char], acc: List[Bit]): List[Bit] = text match {
+        case List() => acc
+        case y :: ys => loop(ys, acc ::: codeBits(table)(y))
       }
       loop(text, List())
     }
