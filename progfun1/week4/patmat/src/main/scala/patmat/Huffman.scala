@@ -154,14 +154,16 @@ object Huffman {
     * This function decodes the bit sequence `bits` using the code tree `tree` and returns
     * the resulting list of characters.
     */
-  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
-    def loop(t: CodeTree, b: List[Bit], acc: List[Char]): List[Char] = t match {
-      case Leaf(c, w) => if (b.isEmpty) acc ++ List(c) else loop(tree, b, acc ++ List(c))
-      case Fork(l, r, _, _) =>
-        if (b.head == 0) loop(l, b.tail, acc)
-        else loop(r, b.tail, acc)
-    }
-    loop(tree, bits, List())
+  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = bits match {
+    case List() => List()
+    case _ :: _ =>
+      def loop(t: CodeTree, bs: List[Bit]): List[Char] = t match {
+        case Leaf(c, _) => List(c) ++ decode(tree, bs)
+        case Fork(l, r, _, _) =>
+          if (bs.head == 0) loop(l, bs.tail)
+          else loop(r, bs.tail)
+      }
+      loop(tree, bits)
   }
 
 
@@ -190,16 +192,16 @@ object Huffman {
     * This function encodes `text` using the code tree `tree`
     * into a sequence of bits.
     */
-  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = tree match {
-    case Leaf(_, _) => List()
-    case Fork(_, _, _, _) => if (text.isEmpty) List() else encode(tree, text.head) ++ encode(tree)(text.tail)
-  }
-
-  def encode(tree: CodeTree, char: Char): List[Bit] = tree match {
-    case Leaf(_, _) => List()
-    case Fork(l, r, c, _) =>
-      if (chars(l).contains(char)) 0 :: encode(l, char)
-      else 1 :: encode(r, char)
+  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = text match {
+    case List() => List()
+    case y :: ys =>
+      def loop(t: CodeTree, char: Char): List[Bit] = t match {
+        case Leaf(_, _) => encode(tree)(ys)
+        case Fork(l, r, _, _) =>
+          if (chars(l).contains(char)) 0 :: loop(l, char)
+          else 1 :: loop(r, char)
+      }
+      loop(tree, y)
   }
 
 
@@ -229,7 +231,7 @@ object Huffman {
    */
     def convert(tree: CodeTree): CodeTable = tree match {
       case Leaf(c, _) => List((c,List()))
-      case Fork(l,r,c,_) => mergeCodeTables(convert(l), convert(r))
+      case Fork(l,r,_,_) => mergeCodeTables(convert(l), convert(r))
     }
 
   
