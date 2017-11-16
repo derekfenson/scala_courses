@@ -154,6 +154,7 @@ object Huffman {
     * This function decodes the bit sequence `bits` using the code tree `tree` and returns
     * the resulting list of characters.
     */
+<<<<<<< HEAD
   def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
     def loop(t: CodeTree, b: List[Bit], acc: List[Char]): List[Char] = t match {
       case Leaf(c, _) => if (b.isEmpty) acc ++ List(c) else loop(tree, b, acc ++ List(c))
@@ -162,6 +163,18 @@ object Huffman {
         else loop(r, b.tail, acc)
     }
     loop(tree, bits, List())
+=======
+  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = bits match {
+    case List() => List()
+    case _ :: _ =>
+      def loop(t: CodeTree, bs: List[Bit]): List[Char] = t match {
+        case Leaf(c, _) => List(c) ++ decode(tree, bs)
+        case Fork(l, r, _, _) =>
+          if (bs.head == 0) loop(l, bs.tail)
+          else loop(r, bs.tail)
+      }
+      loop(tree, bits)
+>>>>>>> 7c83df7bd99395ff53ea63cfe01092324a2e98f1
   }
 
 
@@ -193,13 +206,13 @@ object Huffman {
   def encode(tree: CodeTree)(text: List[Char]): List[Bit] = text match {
     case List() => List()
     case y :: ys =>
-      def loop(t: CodeTree, acc: List[Bit]): List[Bit] = t match {
-        case Leaf(_, _) => if (ys.isEmpty) acc else acc ++ encode(tree)(ys)
+      def loop(t: CodeTree, char: Char): List[Bit] = t match {
+        case Leaf(_, _) => encode(tree)(ys)
         case Fork(l, r, _, _) =>
-          if (chars(l).contains(y)) 0 :: loop(l, acc)
-          else 1 :: loop(r, acc)
+          if (chars(l).contains(char)) 0 :: loop(l, char)
+          else 1 :: loop(r, char)
       }
-      loop(tree, List())
+      loop(tree, y)
   }
 
   // Part 4b: Encoding using code table
@@ -228,7 +241,7 @@ object Huffman {
    */
     def convert(tree: CodeTree): CodeTable = tree match {
       case Leaf(c, _) => List((c,List()))
-      case Fork(l,r,c,_) => mergeCodeTables(convert(l), convert(r))
+      case Fork(l,r,_,_) => mergeCodeTables(convert(l), convert(r))
     }
 
   
