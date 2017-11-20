@@ -166,4 +166,32 @@ object Anagrams {
     }
     sentenceAnagrams(sentenceOccurrences(sentence))
   }
+
+  /** Returns a list of all anagram sentences of the given sentence.
+    *
+    * Differs from sentenceAnagrams by storing the intermediate anagrams instead of recomputing anagams each time
+    *
+    */
+  def sentenceAnagramsMemo(sentence: Sentence): List[Sentence] = {
+    val gramMap = Map[Occurrences, List[Sentence]]() withDefaultValue(List())
+
+    def getAnagrams(occurrences: Occurrences): List[Sentence] = gramMap(occurrences) match {
+      case List() => {
+        val currOcc = sentenceAnagrams(occurrences)
+        gramMap + (occurrences -> currOcc)
+        currOcc
+      }
+      case x => x
+    }
+
+    def sentenceAnagrams(occurrences: Occurrences): List[Sentence] = {
+      if (occurrences.isEmpty) List(List())
+      else for {
+          combo <- combinations(occurrences)
+          word <- dictionaryByOccurrences(combo)
+          sent <- getAnagrams(subtract(occurrences, combo))
+        } yield word :: sent
+    }
+    sentenceAnagrams(sentenceOccurrences(sentence))
+  }
 }
