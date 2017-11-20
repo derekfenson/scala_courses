@@ -173,14 +173,13 @@ object Anagrams {
     *
     */
   def sentenceAnagramsMemo(sentence: Sentence): List[Sentence] = {
-    val gramMap = Map[Occurrences, List[Sentence]]() withDefaultValue(List())
+    val gramMap = scala.collection.mutable.HashMap[Occurrences, List[Sentence]]() withDefaultValue List()
 
     def getAnagrams(occurrences: Occurrences): List[Sentence] = gramMap(occurrences) match {
-      case List() => {
+      case List() =>
         val currOcc = sentenceAnagrams(occurrences)
         gramMap + (occurrences -> currOcc)
         currOcc
-      }
       case x => x
     }
 
