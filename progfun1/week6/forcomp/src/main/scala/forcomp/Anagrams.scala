@@ -173,15 +173,14 @@ object Anagrams {
     *
     */
   def sentenceAnagramsMemo(sentence: Sentence): List[Sentence] = {
-    val gramMap = Map[Occurrences, List[Sentence]]() withDefaultValue(List())
+    var gramMap = Map[Occurrences, List[Sentence]]()
 
-    def getAnagrams(occurrences: Occurrences): List[Sentence] = gramMap(occurrences) match {
-      case List() => {
-        val currOcc = sentenceAnagrams(occurrences)
-        gramMap + (occurrences -> currOcc)
-        currOcc
-      }
-      case x => x
+    def getAnagrams(occurrences: Occurrences): List[Sentence] = gramMap get occurrences match {
+      case None =>
+        val currAna = sentenceAnagrams(occurrences)
+        gramMap = gramMap + (occurrences -> currAna)
+        currAna
+      case Some(ls) => ls
     }
 
     def sentenceAnagrams(occurrences: Occurrences): List[Sentence] = {
