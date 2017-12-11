@@ -173,6 +173,7 @@ object Anagrams {
     *
     */
   def sentenceAnagramsMemo(sentence: Sentence): List[Sentence] = {
+
     var gramMap = Map[Occurrences, List[Sentence]]()
 
     def getAnagrams(occurrences: Occurrences): List[Sentence] = gramMap get occurrences match {
